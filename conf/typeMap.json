@@ -1,0 +1,30 @@
+{
+	"txt": {
+		"mime": "text/plain",
+		"encoding": "utf-8"
+	},
+	"html": {
+		"mime": "text/html",
+		"encoding": "utf-8"
+	},
+	"css": {
+		"mime": "text/css",
+		"encoding": "utf-8"
+	},
+	"js": {
+		"mime": "text/javascript",
+		"encoding": "utf-8"
+	},
+	"png": {
+		"mime": "image/png"
+	},
+	"jpg": {
+		"mime": "image/jpg"
+	},
+	"gif": {
+		"mime": "image/gif"
+	},
+	"ico": {
+		"mime": "image/x-icon"
+	}
+}
