@@ -9,15 +9,12 @@ const type_map = JSON.parse(fs.readFileSync(
 ));
 
 module.exports = (src, encoding = null) => {
-	if(encoding === null)
-		encoding = ((extension) =>
-			(extension && type_map[extension])?.encoding || null
-		)(getFileExtension(src));
 	try {
-		if(encoding)
-			return fs.readFileSync(src, { encoding });
-		else
-			return fs.readFileSync(src);
+		const extension = getFileExtension(src);
+		const type = (extension && type_map[extension]) || null;
+		encoding = encoding || type?.encoding || null;
+		const content = fs.readFileSync.apply(fs, [src, encoding ? { encoding } : {}]);
+		return { extension, type, encoding, content };
 	} catch(e) {
 		return null;
 	}

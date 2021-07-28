@@ -1,7 +1,7 @@
 'use strict';
 
 const URL = require('url');
-const fs = require('fs');
+const readFile = require('../core/readFile');
 
 function getHandler(src) {
 	try {
@@ -48,9 +48,7 @@ function generateEntry(structure, src) {
 let root;
 
 function load() {
-	const json = JSON.parse(fs.readFileSync(
-		'./conf/entries.json', { encoding: 'utf-8' }
-	));
+	const json = JSON.parse(readFile('./conf/entries.json').content);
 	root = generateEntry(json);
 }
 
