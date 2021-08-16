@@ -1,6 +1,5 @@
 'use strict';
 
-const URL = require('url');
 const readFile = require('../core/readFile');
 
 function getHandler(src) {
@@ -62,15 +61,9 @@ class Query {
 	}
 };
 
-function getEntry(url) {
-	try {
-		const path = URL.parse(url).pathname;
-		const dir = path.slice(1).split('/');
-		const entry = root.find(dir);
-		return entry && entry.handler && new Query(entry, dir);
-	} catch(e) {
-		return null;
-	}
+function getEntry(path) {
+	const entry = root.find(path.slice());
+	return entry && entry.handler && new Query(entry, path);
 }
 
 load();

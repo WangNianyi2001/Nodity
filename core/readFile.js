@@ -12,7 +12,7 @@ module.exports = (src, encoding = null) => {
 	try {
 		const extension = getFileExtension(src);
 		const type = (extension && type_map[extension]) || null;
-		encoding = encoding || type?.encoding || null;
+		encoding = encoding || type && type.encoding || null;
 		const content = fs.readFileSync.apply(fs, [src, encoding ? { encoding } : {}]);
 		return { extension, type, encoding, content };
 	} catch(e) {
