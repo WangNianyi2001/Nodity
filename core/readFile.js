@@ -1,7 +1,7 @@
 'use strict';
 
 const fs = require('fs');
-const getFileExtension = require('./getFileExtension');
+const getFileExtension = src => (src.match(/(?<=\.)([^.]+)$/) || [null])[0];
 
 const type_map = JSON.parse(fs.readFileSync(
 	'conf/typeMap.json',
