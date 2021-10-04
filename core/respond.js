@@ -1,8 +1,8 @@
 'use strict';
 
-module.exports = cb => (req, res) => {
+module.exports = cb => async (req, res) => {
 	try {
-		const status = cb(req, res);
+		const status = await cb(req, res);
 		if(status && status !== 200)
 			res.writeHead(status);
 	} catch(e) {
