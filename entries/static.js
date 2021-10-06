@@ -7,6 +7,9 @@ module.exports = require('../core/respond')((req, res) => {
 	const file = readFile(src) || readFile(src + '/index.html');
 	if(!file)
 		return 404;
-	res.writeHead(200, file.type && file.type.mime ? { MimeType: file.type.mime } : {});
+	const header = {};
+	if(file.type && file.type.mime)
+		header.MimeType = file.type.mime;
+	res.writeHead(200, header);
 	res.write(file.content);
 });
