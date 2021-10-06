@@ -1,6 +1,6 @@
 'use strict';
 
-const readFile = require('../core/readFile');
+const readFile = require('./readFile');
 
 function getHandler(src) {
 	try {
@@ -51,21 +51,10 @@ function load() {
 	root = generateEntry(json);
 }
 
-class Query {
-	constructor(entry, dir) {
-		this.entry = entry;
-		this.dir = dir;
-	}
-	handle(req, res) {
-		return this.entry.handler(req, res);
-	}
-};
-
-function getEntry(path) {
-	const entry = root.find(path.slice());
-	return entry && entry.handler && new Query(entry, path);
+function findEntry(path) {
+	return root.find(path.slice());
 }
 
 load();
 
-module.exports = getEntry;
+module.exports = findEntry;
