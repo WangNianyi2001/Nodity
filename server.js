@@ -4,16 +4,18 @@ const http = require('http');
 const findEntry = require('./core/findEntry');
 const readFile = require('./core/readFile');
 const port = parseInt(readFile('./conf/port', 'utf-8').content);
+const Request = require('./core/request');
 
 http.createServer((req, res) => {
-	const entry = findEntry(req.url);
+	const request = new Request(req);
+	const entry = findEntry(request);
 	if(!entry) {
 		res.writeHead(404);
 		res.end();
 		return;
 	}
 	try {
-		entry(req, res);
+		entry(request, res);
 	} catch(e) {
 		res.writeHead(505);
 		res.write(e);
