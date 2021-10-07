@@ -8,17 +8,17 @@ const Request = require('./core/request');
 
 http.createServer((req, res) => {
 	const request = new Request(req);
-	const entry = findEntry(request);
+	const entry = findEntry(request.dir.slice());
 	if(!entry) {
 		res.writeHead(404);
 		res.end();
 		return;
 	}
 	try {
-		entry(request, res);
+		entry.handler(request, res);
 	} catch(e) {
 		res.writeHead(505);
-		res.write(e);
+		res.write(e.toString());
 		res.end();
 	}
 }).listen(port);

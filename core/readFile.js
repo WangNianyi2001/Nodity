@@ -12,7 +12,8 @@ module.exports = (src, encoding = null) => {
 	try {
 		const extension = getFileExtension(src);
 		const type = type_map?.[extension];
-		encoding ||= type && type.encoding;
+		if(!encoding)
+			encoding = type && type.encoding;
 		const options = {};
 		if(encoding)
 			options.encoding = encoding
