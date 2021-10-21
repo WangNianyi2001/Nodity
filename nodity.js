@@ -15,8 +15,7 @@ switch(args[0]) {
 		console.log('Starting the server');
 		const { spawn } = require('child_process');
 		const proc = spawn('node', ['./core/server.js'], {
-			stdio: 'pipe',
-			detached: true
+			stdio: 'pipe'
 		});
 		proc.stdout.on('data', data => console.log(data.toString()));
 		proc.stderr.on('data', data => console.error(data.toString()));
