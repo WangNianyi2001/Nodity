@@ -52,12 +52,10 @@ function startServer() {
 }
 
 function stopServer() {
-	http_server.once('close', () => {
-		fs.rmSync('./runtime/server.lock');
-		console.log('Server stopped');
-		local_server.close();
-	});
 	http_server.close();
+	fs.rmSync('./runtime/server.lock');
+	local_server.close();
+	console.log('Server stopped');
 }
 
 startServer();

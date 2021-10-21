@@ -43,7 +43,7 @@ function stopServer() {
 	}
 	console.log('Stopping the server');
 	client.write('stop');
-	setTimeout(() => client.destroy(), 100);
+	setTimeout(() => client.destroy(), 1000);
 }
 
 switch(args[0]) {
@@ -57,7 +57,7 @@ switch(args[0]) {
 	}
 	case 'restart': {
 		stopServer();
-		startServer();
+		setTimeout(startServer, 1000);
 		break;
 	}
 }
