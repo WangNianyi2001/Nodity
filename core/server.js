@@ -22,7 +22,6 @@ const http_server = http.createServer((req, res) => {
 		res.end();
 	}
 });
-http_server.listen(port);
 
 const net = require('net');
 const fs = require('fs');
@@ -34,22 +33,31 @@ const local_server = net.createServer({
 }, connection => {
 	connection.on('data', data => {
 		data = data.toString();
-		if(data === 'stop') {
-			http_server.close();
-			http_server.once('close', () => {
-				console.log('Server stopped');
-				connection.write('');
-				local_server.close();
-			});
-		}
+		if(data === 'stop')
+			stopServer();
 	});
 	connection.pipe(connection);
-})
+});
 
 try {
 	fs.unlinkSync(pipeFile);
 } catch (error) {}
 
-local_server.listen(pipeFile);
+function startServer() {
+	http_server.listen(port);
+	local_server.listen(pipeFile);
+	console.log(process.cwd());
+	fs.writeFileSync('./runtime/server.lock', process.pid.toString());
+	console.log('Server started');
+}
 
-console.log('Server started');
+function stopServer() {
+	http_server.once('close', () => {
+		fs.rmSync('./runtime/server.lock');
+		console.log('Server stopped');
+		local_server.close();
+	});
+	http_server.close();
+}
+
+startServer();
