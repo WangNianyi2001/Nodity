@@ -35,7 +35,6 @@ const local_server = net.createServer({
 	connection.on('data', data => {
 		data = data.toString();
 		if(data === 'stop') {
-			console.log('Stopping the server');
 			http_server.close();
 			http_server.once('close', () => {
 				console.log('Server stopped');
@@ -52,3 +51,5 @@ try {
 } catch (error) {}
 
 local_server.listen(pipeFile);
+
+console.log('Server started');

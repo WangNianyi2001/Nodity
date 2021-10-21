@@ -12,6 +12,7 @@ const getClient = () => {
 
 switch(args[0]) {
 	case 'start': {
+		console.log('Starting the server');
 		const { spawn } = require('child_process');
 		const proc = spawn('node', ['./core/server.js'], {
 			stdio: 'pipe',
@@ -25,6 +26,7 @@ switch(args[0]) {
 		const client = getClient();
 		if(!client)
 			break;
+		console.log('Stopping the server');
 		client.write('stop');
 		client.once('data', () => client.destroy());
 		break;

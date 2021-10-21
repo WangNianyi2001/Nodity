@@ -25,7 +25,7 @@ class Entry {
 		this.subs.add(name, sub);
 	}
 	find(dir) {
-		const sub_name = dir.shift();
+		const sub_name = dir.length ? dir.shift() : '';
 		if(this.subs.has(sub_name))
 			return this.subs.get(sub_name).find(dir);
 		return this;
