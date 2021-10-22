@@ -1,11 +1,11 @@
 'use strict';
 
 const net = require('net');
-const pipeFile = require('./core/pipeFile');
+const Environment = require('./core/Environment');
 const { spawn } = require('child_process');
 
 async function getClient() {
-	const socket = net.connect(pipeFile);
+	const socket = net.connect(Environment.pipe_file);
 	return new Promise(res => {
 		socket.once('error', res.bind(null, null));
 		socket.once('connect', res.bind(null, socket));

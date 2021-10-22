@@ -2,9 +2,8 @@
 
 const http = require('http');
 const Entry = require('./Entry');
-const { readFile } = require('./ProFile');
-const port = parseInt(readFile('./conf/port', 'utf-8').content);
-const Request = require('./request');
+const Environment = require('./Environment');
+const Request = require('./Request');
 
 const http_server = http.createServer((req, res) => {
 	const request = new Request(req);
@@ -26,8 +25,6 @@ const http_server = http.createServer((req, res) => {
 const net = require('net');
 const fs = require('fs');
 
-const pipeFile = require('./pipeFile');
-
 const local_server = net.createServer({
 	allowHalfOpen: true
 }, connection => {
@@ -40,12 +37,12 @@ const local_server = net.createServer({
 });
 
 try {
-	fs.unlinkSync(pipeFile);
+	fs.unlinkSync(Environment.pipe_file);
 } catch (error) {}
 
 function startServer() {
-	http_server.listen(port);
-	local_server.listen(pipeFile);
+	http_server.listen(Environment.port);
+	local_server.listen(Environment.pipe_file);
 	console.log('Server started');
 }
 

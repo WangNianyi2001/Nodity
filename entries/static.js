@@ -4,7 +4,7 @@ const { readFile } = require('../core/ProFile');
 
 const static_root = 'static/';
 
-module.exports = require('../core/respond')(({ path, res }) => {
+module.exports = require('../core/Respond')(({ path, res }) => {
 	const src = static_root + path.toLocal();
 	const file = readFile(src) || readFile(src + '/index.html');
 	if(!file)
