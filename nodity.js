@@ -1,42 +1,34 @@
 'use strict';
 
-const args = Array.prototype.slice.call(process.argv, 2);
+const net = require('net');
+const pipeFile = require('./core/pipeFile');
+const { spawn } = require('child_process');
 
 async function getClient() {
-	const net = require('net');
-	const pipeFile = require('./core/pipeFile');
 	const socket = net.connect(pipeFile);
 	return new Promise(res => {
-		socket.once('error', () => res(null));
-		socket.once('connect', () => res(socket));
+		socket.once('error', res.bind(null, null));
+		socket.once('connect', res.bind(null, socket));
 	});
 }
 
 async function startServer() {
-	if(await getClient()) {
-		console.error('The server is already running');
-		return;
-	}
+	if(await getClient())
+		return console.error('The server is already running');
 	console.log('Starting the server');
-	const { spawn } = require('child_process');
 	spawn('node', ['./core/server.js'], { stdio: 'inherit' });
 }
 
 async function stopServer() {
 	const client = await getClient();
-	if(!client) {
-		console.error('The server is not running');
-		return;
-	}
+	if(!client)
+		return console.error('The server is not running');
 	console.log('Stopping the server');
 	client.write('stop');
-	return new Promise(res => {
-		client.once('data', () => {
-			client.destroy();
-			res();
-		});
-	});
+	return new Promise(res => client.once('data', () => res(client.destroy())));
 }
+
+const args = Array.prototype.slice.call(process.argv, 2);
 
 (async function() {
 	switch(args[0]) {
