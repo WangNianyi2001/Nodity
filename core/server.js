@@ -34,7 +34,7 @@ const local_server = net.createServer({
 	connection.on('data', data => {
 		data = data.toString();
 		if(data === 'stop')
-			stopServer();
+			stopServer(connection);
 	});
 	connection.pipe(connection);
 });
@@ -46,15 +46,17 @@ try {
 function startServer() {
 	http_server.listen(port);
 	local_server.listen(pipeFile);
-	console.log(process.cwd());
-	fs.writeFileSync('./runtime/server.lock', process.pid.toString());
 	console.log('Server started');
 }
 
-function stopServer() {
+async function stopServer(connection) {
 	http_server.close();
-	fs.rmSync('./runtime/server.lock');
+	await new Promise(res => {
+		connection.write('');
+		http_server.once('close', res);
+	});
 	local_server.close();
+	await new Promise(res => local_server.once('close', res));
 	console.log('Server stopped');
 }
 
