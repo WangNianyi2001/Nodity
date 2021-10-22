@@ -8,7 +8,7 @@ const Request = require('./request');
 
 const http_server = http.createServer((req, res) => {
 	const request = new Request(req);
-	const entry = findEntry(request.dir.slice());
+	const entry = findEntry(request.path);
 	if(!entry) {
 		res.writeHead(404);
 		res.end();

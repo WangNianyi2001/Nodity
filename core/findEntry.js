@@ -46,4 +46,4 @@ function generateEntry(structure, src) {
 
 const root = generateEntry(JSON.parse(readFile('./conf/entries.json').content));
 
-module.exports = path => root.find(path);
+module.exports = path => root.find(path.dir.slice());

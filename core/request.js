@@ -1,11 +1,11 @@
 'use strict';
 
-const URL = require('url');
+const ProFile = require('./ProFile');
 
 function Request(req) {
 	this.req = req;
-	this.url = new URL(req.url);
-	this.dir = this.url.pathname.slice(1).split('/').map(decodeURIComponent).filter(x => !!x);
+	const url = req.headers.host + req.url;
+	this.path = ProFile.Path.fromURL(url);
 }
 
 module.exports = Request;
