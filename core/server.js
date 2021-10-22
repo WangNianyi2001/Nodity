@@ -1,7 +1,7 @@
 'use strict';
 
 const Entry = require('./Entry');
-const Environment = require('./Environment');
+const env = require('./env');
 const Request = require('./Request');
 
 function ServerAgent(proto, listener, options, port) {
@@ -15,6 +15,21 @@ ServerAgent.prototype = {
 	async stop() {
 		this.server.close();
 		return new Promise(res => this.server.once('close', res));
+	}
+};
+
+const local_commands = {
+	async 'start'() {
+		await http_server.start();
+		console.log('Server started');
+	},
+	async 'stop-http'() {
+		await http_server.stop();
+		this.write('http-stopped');
+	},
+	async 'stop-local'() {
+		await local_server.stop();
+		console.log('Server stopped');
 	}
 };
 
@@ -36,26 +51,21 @@ function HTTPListener(req, res) {
 }
 function localListener(connection) {
 	connection.on('data', async data => {
-		data = data.toString();
-		if(data === 'stop-http') {
-			await http_server.stop();
-			connection.write('stopped');
-		}
-		if(data === 'stop-local') {
-			await local_server.stop();
-			console.log('Server stopped');
+		try {
+			const { command, args } = JSON.parse(data.toString());
+			if(!local_commands.hasOwnProperty(command))
+				throw 'Invalid nodity command: ' + data;
+			await local_commands[command].call(connection, args);
+		} catch(e) {
+			console.error(e);
 		}
 	});
 }
 
-const http_server = new ServerAgent(require('http'), HTTPListener, {}, Environment.port);
-const local_server = new ServerAgent(require('net'), localListener, { allowHalfOpen: true }, Environment.pipe_file);
+const http_server = new ServerAgent(require('http'), HTTPListener, {}, env.port);
+const local_server = new ServerAgent(require('net'), localListener, { allowHalfOpen: true }, env.pipe_file);
 
-(async () => {
-	try {
-		require('fs').unlinkSync(Environment.pipe_file);
-	} catch {}
-	await http_server.start();
-	await local_server.start();
-	console.log('Server started');
-})();
+try {
+	require('fs').unlinkSync(env.pipe_file);
+} catch {}
+local_server.start();

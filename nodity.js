@@ -1,16 +1,20 @@
 'use strict';
 
 const net = require('net');
-const Environment = require('./core/Environment');
+const env = require('./core/env');
 const { spawn } = require('child_process');
 const { connect } = require('http2');
 
 async function getConnect() {
-	const socket = net.connect(Environment.pipe_file);
+	const socket = net.connect(env.pipe_file);
 	return new Promise(res => {
 		socket.once('error', res.bind(null, null));
 		socket.once('connect', res.bind(null, socket));
 	});
+}
+
+function sendCommand(connect, command, args = {}) {
+	connect.write(JSON.stringify({ command, args }));
 }
 
 async function startServer() {
@@ -25,10 +29,10 @@ async function stopServer() {
 	if(!connect)
 		return console.error('The server is not running');
 	console.log('Stopping the HTTP server');
-	connect.write('stop-http');
+	sendCommand(connect, 'stop-http');
 	await new Promise(res => connect.once('data', res));
 	console.log('Stopping the local server')
-	connect.write('stop-local');
+	sendCommand(connect, 'stop-local');
 	connect.end();
 }
 
