@@ -15,7 +15,7 @@ const http_server = http.createServer((req, res) => {
 		return;
 	}
 	try {
-		entry.handler(request, res);
+		entry.handle(request, res);
 	} catch(e) {
 		res.writeHead(505);
 		res.write(e.toString());

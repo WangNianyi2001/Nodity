@@ -40,13 +40,32 @@ function Path(dir, base = null) {
 		case dir instanceof Array:
 			this.dir.push(...dir);
 			break;
-		case dir.toString() === dir:
+		case typeof dir === 'string':
 			this.dir.push(...dir.split('/'));
 			break;
 	}
-	this.uptrace = trimRelativeLocators(this.dir);
+	this.uptrace = 0;
+	this.trim();
 }
 Path.prototype = {
+	get last() {
+		return this.dir.length ? null : this.dir[this.dir.length - 1];
+	},
+	get length() {
+		return this.dir.length;
+	},
+	trim() {
+		this.uptrace += trimRelativeLocators(this.dir);
+		return this;
+	},
+	eat(n) {
+		const res = new Path(this);
+		const m = Math.min(n, res.uptrace, 0);
+		n -= m;
+		res.uptrace -= m;
+		res.dir.splice(0, n);
+		return res.trim();
+	},
 	navigate(path) {
 		path = Path(path);
 		const res = new Path(this);
@@ -63,6 +82,9 @@ Path.prototype = {
 	},
 	toLocal() {
 		return this.dir.join('/');
+	},
+	toString() {
+		return this.dir.toString();
 	}
 };
 
