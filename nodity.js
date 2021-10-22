@@ -28,22 +28,17 @@ async function stopServer() {
 	return new Promise(res => client.once('data', () => res(client.destroy())));
 }
 
-const args = Array.prototype.slice.call(process.argv, 2);
-
-(async function() {
-	switch(args[0]) {
-		case 'start': {
-			await startServer();
-			break;
-		}
-		case 'stop': {
-			await stopServer();
-			break;
-		}
-		case 'restart': {
-			await stopServer();
-			await startServer();
-			break;
-		}
+function distributeCommand(distributor, argv) {
+	const command = argv.shift();
+	if(!distributor.hasOwnProperty(command))
+		return console.error(`No such command '${command}'`);
+	distributor[command].apply(null, argv);
+}
+distributeCommand({
+	'start': startServer,
+	'stop': stopServer,
+	async 'restart'() {
+		await stopServer();
+		await startServer();
 	}
-})();
+}, Array.prototype.slice.call(process.argv, 2));
