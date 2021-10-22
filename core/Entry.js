@@ -1,6 +1,6 @@
 'use strict';
 
-const readFile = require('./readFile');
+const { readFile } = require('./ProFile');
 
 function getHandler(src) {
 	try {
@@ -44,6 +44,8 @@ function generateEntry(structure, src) {
 	return root;
 }
 
-const root = generateEntry(JSON.parse(readFile('./conf/entries.json').content));
+Entry.root = generateEntry(JSON.parse(readFile('./conf/entries.json').content));
 
-module.exports = path => root.find(path.dir.slice());
+Entry.find = path => Entry.root.find(path.dir.slice());
+
+module.exports = Entry;

@@ -1,14 +1,14 @@
 'use strict';
 
 const http = require('http');
-const findEntry = require('./findEntry');
-const readFile = require('./readFile');
+const Entry = require('./Entry');
+const { readFile } = require('./ProFile');
 const port = parseInt(readFile('./conf/port', 'utf-8').content);
 const Request = require('./request');
 
 const http_server = http.createServer((req, res) => {
 	const request = new Request(req);
-	const entry = findEntry(request.path);
+	const entry = Entry.find(request.path);
 	if(!entry) {
 		res.writeHead(404);
 		res.end();
