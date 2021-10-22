@@ -21,7 +21,7 @@ class Entry {
 		try {
 			this.handler = require('../entries/' + src);
 		} catch(e) {
-			console.error(`Unable to load entry '${this.path.toLocal()}' at ${this.src}`);
+			console.warn(`Unable to load entry '${this.path.toLocal()}' at ${this.src}`);
 		}
 	}
 	find(dir) {

@@ -3,7 +3,6 @@
 const net = require('net');
 const env = require('./core/env');
 const { spawn } = require('child_process');
-const { connect } = require('http2');
 
 async function getConnect() {
 	const socket = net.connect(env.pipe_file);
@@ -20,7 +19,7 @@ function sendCommand(connect, command, args = {}) {
 async function startServer() {
 	if(await getConnect())
 		return console.error('The server is already running');
-	console.log('Starting the server');
+	console.log('Starting Nodity server');
 	spawn('node', ['./core/server.js'], { stdio: 'inherit' });
 }
 
@@ -28,12 +27,20 @@ async function stopServer() {
 	const connect = await getConnect();
 	if(!connect)
 		return console.error('The server is not running');
-	console.log('Stopping the HTTP server');
+	console.log('Stopping Nodity server');
+	console.group();
+	console.group('Stopping HTTP server');
 	sendCommand(connect, 'stop-http');
 	await new Promise(res => connect.once('data', res));
-	console.log('Stopping the local server')
+	console.log('HTTP server stopped');
+	console.groupEnd();
+	console.group('Stopping local server')
 	sendCommand(connect, 'stop-local');
 	connect.end();
+	console.log('Local server stopped');
+	console.groupEnd();
+	console.groupEnd();
+	console.log('Nodity server stopped');
 }
 
 function distributeCommand(distributor, argv) {

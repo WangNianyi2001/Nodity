@@ -19,17 +19,12 @@ ServerAgent.prototype = {
 };
 
 const local_commands = {
-	async 'start'() {
-		await http_server.start();
-		console.log('Server started');
-	},
 	async 'stop-http'() {
 		await http_server.stop();
 		this.write('http-stopped');
 	},
 	async 'stop-local'() {
 		await local_server.stop();
-		console.log('Server stopped');
 	}
 };
 
@@ -65,7 +60,19 @@ function localListener(connection) {
 const http_server = new ServerAgent(require('http'), HTTPListener, {}, env.port);
 const local_server = new ServerAgent(require('net'), localListener, { allowHalfOpen: true }, env.pipe_file);
 
-try {
-	require('fs').unlinkSync(env.pipe_file);
-} catch {}
-local_server.start();
+(async () => {
+	try {
+		require('fs').unlinkSync(env.pipe_file);
+	} catch {}
+	console.group();
+	console.group('Starting local server');
+	await local_server.start();
+	console.log('Local server started');
+	console.groupEnd();
+	console.group('Starting HTTP server');
+	await http_server.start();
+	console.log('HTTP server started');
+	console.groupEnd();
+	console.groupEnd();
+	console.log('Nodity server started');
+})();
