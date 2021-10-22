@@ -1,6 +1,6 @@
 'use strict';
 
-const { URL } = require('url');
+const { parse: parseURL } = require('url');
 
 function trimRelativeLocators(dir) {
 	let uptrace = 0;
@@ -99,10 +99,10 @@ Path.makeFactor = (extractor, decoder, modifier = id, post = id) =>
 
 Path.fromLocal = Path.makeFactor(id, component => component.toString().replace(/\\(?!\\)/g, ''));
 Path.fromURL = Path.makeFactor(
-	(url => new URL(url).pathname),
+	(url => parseURL(url).pathname),
 	decodeURIComponent,
 	arr => arr.slice(1).filter(trusy),
-	(path, url) => { path.url = new URL(url); return path; }
+	(path, url) => { path.url = parseURL(url); return path; }
 );
 
 module.exports = Path;
