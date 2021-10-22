@@ -1,11 +1,24 @@
 'use strict';
 
-const http = require('http');
 const Entry = require('./Entry');
 const Environment = require('./Environment');
 const Request = require('./Request');
 
-const http_server = http.createServer((req, res) => {
+function ServerAgent(proto, listener, options, port) {
+	this.server = proto.createServer(options, listener);
+	this.port = port;
+}
+ServerAgent.prototype = {
+	async start() {
+		this.server.listen(this.port);
+	},
+	async stop() {
+		this.server.close();
+		return new Promise(res => this.server.once('close', res));
+	}
+};
+
+function HTTPListener(req, res) {
 	const request = new Request(req);
 	const entry = Entry.find(request.path);
 	if(!entry) {
@@ -20,41 +33,29 @@ const http_server = http.createServer((req, res) => {
 		res.write(e.toString());
 		res.end();
 	}
-});
-
-const net = require('net');
-const fs = require('fs');
-
-const local_server = net.createServer({
-	allowHalfOpen: true
-}, connection => {
-	connection.on('data', data => {
+}
+function localListener(connection) {
+	connection.on('data', async data => {
 		data = data.toString();
-		if(data === 'stop')
-			stopServer(connection);
+		if(data === 'stop-http') {
+			await http_server.stop();
+			connection.write('stopped');
+		}
+		if(data === 'stop-local') {
+			await local_server.stop();
+			console.log('Server stopped');
+		}
 	});
-	connection.pipe(connection);
-});
+}
 
-try {
-	fs.unlinkSync(Environment.pipe_file);
-} catch (error) {}
+const http_server = new ServerAgent(require('http'), HTTPListener, {}, Environment.port);
+const local_server = new ServerAgent(require('net'), localListener, { allowHalfOpen: true }, Environment.pipe_file);
 
-function startServer() {
-	http_server.listen(Environment.port);
-	local_server.listen(Environment.pipe_file);
+(async () => {
+	try {
+		require('fs').unlinkSync(Environment.pipe_file);
+	} catch {}
+	await http_server.start();
+	await local_server.start();
 	console.log('Server started');
-}
-
-async function stopServer(connection) {
-	http_server.close();
-	await new Promise(res => {
-		connection.write('');
-		http_server.once('close', res);
-	});
-	local_server.close();
-	await new Promise(res => local_server.once('close', res));
-	console.log('Server stopped');
-}
-
-startServer();
+})();
