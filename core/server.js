@@ -1,12 +1,17 @@
 'use strict';
 
 const Entry = require('./Entry');
-const env = require('./env');
 const Request = require('./Request');
+const env = require('./env');
 
 function ServerAgent(proto, listener, options, port) {
 	this.server = proto.createServer(options, listener);
 	this.port = port;
+	const sockets = this.sockets = new Set();
+	this.server.on('connection', function(socket) {
+		sockets.add(socket);
+		this.once('close', () => sockets.delete(socket));
+	});
 }
 ServerAgent.prototype = {
 	async start() {
@@ -14,6 +19,8 @@ ServerAgent.prototype = {
 	},
 	async stop() {
 		this.server.close();
+		for(const socket of this.sockets)
+			socket.destroy();
 		return new Promise(res => this.server.once('close', res));
 	}
 };
