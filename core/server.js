@@ -26,6 +26,17 @@ ServerAgent.prototype = {
 };
 
 const local_commands = {
+	async 'start-local'() {
+		try {
+			require('fs').unlinkSync(env.pipe_file);
+		} catch {}
+		await local_server.start();
+		this.send('local-started');
+	},
+	async 'start-http'() {
+		await http_server.start();
+		this.write('http-started');
+	},
 	async 'stop-http'() {
 		await http_server.stop();
 		this.write('http-stopped');
@@ -34,6 +45,16 @@ const local_commands = {
 		await local_server.stop();
 	}
 };
+async function commandListener(data) {
+	try {
+		const { command, args } = JSON.parse(data.toString());
+		if(!local_commands.hasOwnProperty(command))
+			throw 'Invalid nodity command: ' + data;
+		await local_commands[command].call(this, args);
+	} catch(e) {
+		console.error(e);
+	}
+}
 
 function HTTPListener(req, res) {
 	const request = new Request(req);
@@ -52,34 +73,11 @@ function HTTPListener(req, res) {
 	}
 }
 function localListener(connection) {
-	connection.on('data', async data => {
-		try {
-			const { command, args } = JSON.parse(data.toString());
-			if(!local_commands.hasOwnProperty(command))
-				throw 'Invalid nodity command: ' + data;
-			await local_commands[command].call(connection, args);
-		} catch(e) {
-			console.error(e);
-		}
-	});
+	connection.on('data', commandListener.bind(connection));
 }
 
 const http_server = new ServerAgent(require('http'), HTTPListener, {}, env.port);
 const local_server = new ServerAgent(require('net'), localListener, { allowHalfOpen: true }, env.pipe_file);
+process.on('message', commandListener);
 
-(async () => {
-	try {
-		require('fs').unlinkSync(env.pipe_file);
-	} catch {}
-	console.group();
-	console.group('Starting local server');
-	await local_server.start();
-	console.log('Local server started');
-	console.groupEnd();
-	console.group('Starting HTTP server');
-	await http_server.start();
-	console.log('HTTP server started');
-	console.groupEnd();
-	console.groupEnd();
-	console.log('Nodity server started');
-})();
+process.send('start');
