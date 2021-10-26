@@ -3,7 +3,6 @@
 const net = require('net');
 const env = require('./core/env');
 const { fork } = require('child_process');
-const { send } = require('process');
 
 async function getConnect() {
 	const socket = net.connect(env.pipe_file);
@@ -23,18 +22,18 @@ async function startServer() {
 	console.log('Starting Nodity server');
 	const child = fork('./core/server.js', {
 		stdio: 'inherit',
-		detached: true
+		// detached: true
 	});
 	await new Promise(res => child.once('message', res));
 	console.log('Starting local server')
 	child.send('{ "command": "start-local" }');
 	await new Promise(res => child.once('message', res));
 	console.log('Local server started');
-	console.log('Starting HTTP server');
+	console.log('Starting web server');
 	const connect = await getConnect();
-	sendCommand(connect, 'start-http');
+	sendCommand(connect, 'start-web');
 	await new Promise(res => connect.once('data', res));
-	console.log('HTTP server started');
+	console.log('Web server started');
 	console.log('Nodity server started');
 	child.unref();
 }
@@ -44,10 +43,10 @@ async function stopServer() {
 	if(!connect)
 		return console.error('The server is not running');
 	console.log('Stopping Nodity server');
-	console.log('Stopping HTTP server');
-	sendCommand(connect, 'stop-http');
+	console.log('Stopping web server');
+	sendCommand(connect, 'stop-web');
 	await new Promise(res => connect.once('data', res));
-	console.log('HTTP server stopped');
+	console.log('Web server stopped');
 	console.log('Stopping local server');
 	sendCommand(connect, 'stop-local');
 	connect.end();

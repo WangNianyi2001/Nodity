@@ -3,6 +3,7 @@
 const Entry = require('./Entry');
 const Request = require('./Request');
 const env = require('./env');
+const fs = require('fs');
 
 function ServerAgent(proto, listener, options, port) {
 	this.server = proto.createServer(options, listener);
@@ -16,6 +17,7 @@ function ServerAgent(proto, listener, options, port) {
 ServerAgent.prototype = {
 	async start() {
 		this.server.listen(this.port);
+		return new Promise(res => this.server.once('listening', res));
 	},
 	async stop() {
 		this.server.close();
@@ -33,13 +35,13 @@ const local_commands = {
 		await local_server.start();
 		this.send('local-started');
 	},
-	async 'start-http'() {
-		await http_server.start();
-		this.write('http-started');
+	async 'start-web'() {
+		await web_server.start();
+		this.write('web-started');
 	},
-	async 'stop-http'() {
-		await http_server.stop();
-		this.write('http-stopped');
+	async 'stop-web'() {
+		await web_server.stop();
+		this.write('web-stopped');
 	},
 	async 'stop-local'() {
 		await local_server.stop();
@@ -56,7 +58,7 @@ async function commandListener(data) {
 	}
 }
 
-function HTTPListener(req, res) {
+function webListener(req, res) {
 	const request = new Request(req);
 	const entry = Entry.find(request.path);
 	if(!entry) {
@@ -76,7 +78,10 @@ function localListener(connection) {
 	connection.on('data', commandListener.bind(connection));
 }
 
-const http_server = new ServerAgent(require('http'), HTTPListener, {}, env.port);
+const web_server = new ServerAgent(require('https'), webListener, {
+	key: fs.readFileSync('conf/key.pem'),
+	cert: fs.readFileSync('conf/cert.pem')
+}, env.port);
 const local_server = new ServerAgent(require('net'), localListener, { allowHalfOpen: true }, env.pipe_file);
 process.on('message', commandListener);
 
